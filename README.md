@@ -10,7 +10,8 @@ Stops AMD Adrenalin From Hooking Into Your Games
 
 ## What Changes
 - Record And Stream, In Game Overlay, Hotkeys And Metrics Overlay Off
-- AMD's Logon Tasks StartCN And StartDVR Disabled, So Adrenalin No Longer Starts With Windows
+- AMD's Recording Server No Longer Starts With Windows
+- Adrenalin Itself Still Starts, So Your GPU Tuning Keeps Applying At Boot
 - Every Original Value Is Backed Up First, The Driver Itself Is Never Touched
 
 Successor To [Adrenalize](https://github.com/poolfullofmilk/Adrenalize)

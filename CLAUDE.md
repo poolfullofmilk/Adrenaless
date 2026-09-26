@@ -4,7 +4,9 @@ Personal rules live in `~/.claude/CLAUDE.md`. This file only covers Adrenaless.
 
 ## What This Is
 
-One PowerShell script, `Adrenaless.ps1`, and `Adrenaless.cmd` to double click it. It turns off the Adrenalin features that make AMD's driver hook into games, disables AMD's own logon tasks, and restores everything from a backup on request. Nothing stays running.
+One PowerShell script, `Adrenaless.ps1`, and `Adrenaless.cmd` to double click it. It turns off Record And Stream, the in-game overlay, hotkeys and the metrics overlay, disables AMD's `StartDVR` logon task that starts the recording server, and restores everything from a backup on request. Nothing stays running.
+
+`StartCN` is deliberately left alone. It starts Adrenalin at logon, and Adrenalin is what applies GPU tuning such as an undervolt; 1.0 disabled it and the tuning silently stopped applying after a restart. Third-party tools cannot replace that on recent Radeons, voltage control goes through AMD's own driver interface.
 
 It replaces Adrenalize, a tray app that restarted AMD after every game launch and kept breaking it by killing the host of a hook still loaded in the running game.
 
@@ -17,8 +19,8 @@ It replaces Adrenalize, a tray app that restarted AMD after every game launch an
 
 ## Known
 
-- AMD's D3D11, D3D12 and Vulkan drivers load `amdihk64.dll` into every process that uses the GPU, not only games. A plain window that never touches the GPU does not get it.
-- Unverified: whether that stops once Adrenalin's host no longer starts at logon. If it does not, AMD's Driver Only install is the answer.
+- `amdihk64.dll` is placed by Adrenalin's host service, `AMDRSServ`, into every process that uses AMD's D3D driver, including ones that were already running. With Adrenalin not running nothing is hooked; measured after a restart with `StartCN` off, then again after opening Adrenalin by hand.
+- The hook itself is stock AMD behaviour. What actually broke AMD on this machine was restarting it underneath a running game, and Record And Stream injecting its capture hook next to Medal's.
 - Adrenalize 3 kept its backup in `%AppData%\Adrenalize`, the script moves it over on first start so Restore still works.
 
 ## Releases

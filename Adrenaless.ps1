@@ -5,7 +5,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Version = '1.0'
+$Version = '1.1'
 
 # Original Values Are Kept Until Restore
 $BackupPath = Join-Path $env:APPDATA 'Adrenaless\backup.json'
@@ -19,8 +19,8 @@ $Settings = @(
     @{ Key = 'HKCU:\Software\AMD\CN\Performance'; Name = 'EnableMetricsOverlay'; Off = 0; Label = 'Metrics Overlay' }
 )
 
-# AMD Logon Tasks That Start Adrenalin And Its Host Service
-$TaskNames = @('StartCN', 'StartDVR')
+# AMD Logon Task That Starts The Recording Server, Adrenalin Itself Stays So Tuning Applies
+$TaskNames = @('StartDVR')
 
 function Write-Line([string]$Text = '', [ConsoleColor]$Color = 'Gray') {
     Write-Host $Text -ForegroundColor $Color
