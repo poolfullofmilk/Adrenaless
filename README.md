@@ -8,6 +8,12 @@ Stops AMD Adrenalin From Hooking Into Your Games
 3. Pick 1 To Turn The Hooks Off, Or 2 To Restore Everything
 4. Restart When Asked
 
+## Opening Adrenalin
+Double Click `Adrenaless Open.cmd` Instead Of The Start Menu Or Tray
+- Opens Adrenalin Normally When It Works
+- When Adrenalin Is Stuck And Won't Open, Clears It With One Prompt And Opens It Again
+- Safe While A Game Is Running, AMD's Driver Services Are Never Touched
+
 ## What Changes
 - Record And Stream, In Game Overlay, Hotkeys And Metrics Overlay Off
 - AMD's Recording Server No Longer Starts With Windows

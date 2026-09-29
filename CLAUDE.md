@@ -10,6 +10,12 @@ One PowerShell script, `Adrenaless.ps1`, and `Adrenaless.cmd` to double click it
 
 It replaces Adrenalize, a tray app that restarted AMD after every game launch and kept breaking it by killing the host of a hook still loaded in the running game.
 
+## Opening Adrenalin
+
+`-Open` exists because Adrenalin gets stuck in a way only Task Manager used to fix. Its window process, `RadeonSoftware`, dies on its own, sometimes minutes after boot, while its background parts (`AMDRSServ`, `amdow`, `CPUMetricsServer`) stay alive and run elevated. A new launch then sees Adrenalin as already running, hands the request to those parts and exits in about a tenth of a second without writing a log, and when the background parts are hours old nothing ever shows up. Fresh background parts pass the request on fine, which is why the problem looks random.
+
+`-Open` runs as the user and launches Adrenalin normally. If no window appears within twelve seconds it relaunches itself elevated with `-Clear`, which closes every Adrenalin part but never AMD's driver services, then launches Adrenalin again as the user. The launch must stay unelevated: Adrenalin quits during its splash when it inherits administrator rights. `Adrenaless Open.cmd` strips ` Open` from its own name to find the script, so a versioned pair keeps working.
+
 ## Rules
 
 - Only change what Adrenalin exposes as a setting, or AMD's own scheduled tasks. Never patch, rename or block driver files.

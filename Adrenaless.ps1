@@ -1,11 +1,13 @@
 #Requires -Version 5.1
 param(
     [switch]$Restore,
-    [switch]$Status
+    [switch]$Status,
+    [switch]$Open,
+    [switch]$Clear
 )
 
 $ErrorActionPreference = 'Stop'
-$Version = '1.1'
+$Version = '1.2'
 
 # Original Values Are Kept Until Restore
 $BackupPath = Join-Path $env:APPDATA 'Adrenaless\backup.json'
@@ -18,6 +20,12 @@ $Settings = @(
     @{ Key = 'HKCU:\Software\AMD\DVR'; Name = 'HotkeysDisabled'; Off = 1; Label = 'Hotkeys' }
     @{ Key = 'HKCU:\Software\AMD\CN\Performance'; Name = 'EnableMetricsOverlay'; Off = 0; Label = 'Metrics Overlay' }
 )
+
+# Adrenalin Itself
+$AdrenalinPath = 'C:\Program Files\AMD\CNext\CNext\RadeonSoftware.exe'
+
+# Adrenalin's Parts, Background Ones Run Elevated
+$AdrenalinProcessNames = @('RadeonSoftware', 'AMDRSServ', 'amdow', 'AMDRSSrcExt', 'CPUMetricsServer', 'cncmd')
 
 # AMD Logon Task That Starts The Recording Server, Adrenalin Itself Stays So Tuning Applies
 $TaskNames = @('StartDVR')
@@ -143,6 +151,50 @@ function Restore-Hooks {
     Write-Line 'Everything Restored' Green
 }
 
+function Test-AdrenalinWindow {
+    # A Copy Without A Visible Window Is Stuck, Not Open
+    [bool](Get-Process -Name RadeonSoftware -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like 'AMD Software*' })
+}
+
+function Wait-AdrenalinWindow([int]$Seconds) {
+    for ($second = 0; $second -lt $Seconds; $second++) {
+        if (Test-AdrenalinWindow) {
+            return $true
+        }
+        Start-Sleep -Seconds 1
+    }
+
+    $false
+}
+
+function Open-Adrenalin {
+    # Adrenalin Quits During Startup When Launched Elevated, So This Runs As The User
+    Start-Process -FilePath $AdrenalinPath
+    if (Wait-AdrenalinWindow 12) {
+        Write-Line 'Adrenalin Opened' Green
+        return
+    }
+
+    # Stale Background Parts Swallow Every Launch, Closing Them Needs Administrator Rights
+    Write-Line 'Adrenalin Is Stuck, Clearing It' Yellow
+    try {
+        $arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", '-Clear')
+        Start-Process -FilePath 'powershell.exe' -Verb RunAs -Wait -WindowStyle Hidden -ArgumentList $arguments
+    }
+    catch {
+        Write-Line 'Administrator Rights Were Declined' Red
+        return
+    }
+
+    Start-Process -FilePath $AdrenalinPath
+    if (Wait-AdrenalinWindow 30) {
+        Write-Line 'Adrenalin Opened' Green
+    }
+    else {
+        Write-Line 'Adrenalin Did Not Open' Red
+    }
+}
+
 # Adrenalize 3 Kept Its Backup Under Its Own Name
 if (-not (Test-Path $BackupPath) -and (Test-Path $LegacyBackupPath)) {
     New-Item -ItemType Directory -Path (Split-Path $BackupPath) -Force | Out-Null
@@ -151,6 +203,16 @@ if (-not (Test-Path $BackupPath) -and (Test-Path $LegacyBackupPath)) {
 
 if ($Status) {
     Show-Status
+    return
+}
+
+if ($Open) {
+    Open-Adrenalin
+    return
+}
+
+if ($Clear -and (Test-Administrator)) {
+    Get-Process -Name $AdrenalinProcessNames -ErrorAction SilentlyContinue | Stop-Process -Force
     return
 }
 
