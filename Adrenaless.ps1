@@ -7,18 +7,18 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Version = '1.2'
+$Version = '1.3'
 
 # Original Values Are Kept Until Restore
 $BackupPath = Join-Path $env:APPDATA 'Adrenaless\backup.json'
 $LegacyBackupPath = Join-Path $env:APPDATA 'Adrenalize\backup.json'
 
-# Adrenalin Settings That Make The Driver Hook Into Games
+# Adrenalin Settings And The State Each One Is Set To
 $Settings = @(
-    @{ Key = 'HKCU:\Software\AMD\DVR'; Name = 'DvrEnabled'; Off = 0; Label = 'Record And Stream' }
-    @{ Key = 'HKCU:\Software\AMD\DVR'; Name = 'ShowRSOverlay'; Off = 'false'; Label = 'In Game Overlay' }
-    @{ Key = 'HKCU:\Software\AMD\DVR'; Name = 'HotkeysDisabled'; Off = 1; Label = 'Hotkeys' }
-    @{ Key = 'HKCU:\Software\AMD\CN\Performance'; Name = 'EnableMetricsOverlay'; Off = 0; Label = 'Metrics Overlay' }
+    # Off Makes Adrenalin Crash When Opened During A Game
+    @{ Key = 'HKCU:\Software\AMD\DVR'; Name = 'ShowRSOverlay'; Value = 'true'; State = 'On'; Label = 'In Game Overlay' }
+    @{ Key = 'HKCU:\Software\AMD\DVR'; Name = 'HotkeysDisabled'; Value = 1; State = 'Off'; Label = 'Hotkeys' }
+    @{ Key = 'HKCU:\Software\AMD\CN\Performance'; Name = 'EnableMetricsOverlay'; Value = 0; State = 'Off'; Label = 'Metrics Overlay' }
 )
 
 # Adrenalin Itself
@@ -34,9 +34,9 @@ function Write-Line([string]$Text = '', [ConsoleColor]$Color = 'Gray') {
     Write-Host $Text -ForegroundColor $Color
 }
 
-function Write-State([string]$Label, [bool]$IsOff) {
-    $text = if ($IsOff) { 'Off' } else { 'On' }
-    $color = if ($IsOff) { 'Green' } else { 'Yellow' }
+function Write-State([string]$Label, [string]$State, [bool]$IsSet) {
+    $text = if ($IsSet) { $State } elseif ($State -eq 'On') { 'Off' } else { 'On' }
+    $color = if ($IsSet) { 'Green' } else { 'Yellow' }
     Write-Line ('  {0,-20}{1}' -f $Label, $text) $color
 }
 
@@ -79,18 +79,18 @@ function Show-Status {
 
     foreach ($setting in $Settings) {
         $current = Get-RegistryValue $setting.Key $setting.Name
-        Write-State $setting.Label ($current -and "$($current.Value)" -eq "$($setting.Off)")
+        Write-State $setting.Label $setting.State ($current -and "$($current.Value)" -eq "$($setting.Value)")
     }
 
     foreach ($name in $TaskNames) {
-        Write-State "Task $name" ((Get-TaskState $name) -in 'Disabled', 'Missing')
+        Write-State "Task $name" 'Off' ((Get-TaskState $name) -in 'Disabled', 'Missing')
     }
 
     Write-Line
 }
 
 function Save-Backup {
-    # Only The First Run Records Originals, A Rerun Would Save Values Already Off
+    # Only The First Run Records Originals, A Rerun Would Save Values Already Changed
     if (Test-Path $BackupPath) {
         return
     }
@@ -107,12 +107,12 @@ function Save-Backup {
     $backup | ConvertTo-Json -Depth 4 | Set-Content -Path $BackupPath -Encoding UTF8
 }
 
-function Disable-Hooks {
+function Set-AdrenalinSettings {
     Save-Backup
 
     foreach ($setting in $Settings) {
         $current = Get-RegistryValue $setting.Key $setting.Name
-        Set-RegistryValue $setting.Key $setting.Name $setting.Off $current.Kind
+        Set-RegistryValue $setting.Key $setting.Name $setting.Value $current.Kind
     }
 
     foreach ($name in $TaskNames) {
@@ -121,10 +121,10 @@ function Disable-Hooks {
         }
     }
 
-    Write-Line 'AMD Hooks Turned Off' Green
+    Write-Line 'Settings Applied' Green
 }
 
-function Restore-Hooks {
+function Restore-AdrenalinSettings {
     if (-not (Test-Path $BackupPath)) {
         Write-Line 'Nothing To Restore' Yellow
         return
@@ -233,19 +233,19 @@ if (-not (Test-Administrator)) {
 }
 
 if ($Restore) {
-    Restore-Hooks
+    Restore-AdrenalinSettings
     return
 }
 
 Show-Status
-Write-Line '  1  Turn AMD Hooks Off' White
+Write-Line '  1  Apply Settings' White
 Write-Line '  2  Restore Everything' White
 Write-Line '  Q  Quit' White
 Write-Line
 
 switch ((Read-Host 'Choose').Trim()) {
-    '1' { Disable-Hooks }
-    '2' { Restore-Hooks }
+    '1' { Set-AdrenalinSettings }
+    '2' { Restore-AdrenalinSettings }
     default { return }
 }
 
