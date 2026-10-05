@@ -1,24 +1,35 @@
 # Adrenaless
 
-Keeps AMD Adrenalin Opening, Even While A Game Is Running
+Keeps AMD Adrenalin opening, also while a game is running
 
 ## Use
-1. Download All Three Files From The [Latest Release](https://github.com/poolfullofmilk/Adrenaless/releases/latest), Keep Them Together
-2. Double Click `Adrenaless.cmd` And Accept The Prompt
-3. Pick 1 To Apply The Settings, Or 2 To Restore Everything
-4. Restart When Asked
 
-## Opening Adrenalin
-Double Click `Adrenaless_Open.cmd` Instead Of The Start Menu Or Tray
-- Opens Adrenalin Normally When It Works
-- When Adrenalin Is Stuck And Won't Open, Clears It With One Prompt And Opens It Again
-- Safe While A Game Is Running, AMD's Driver Services Are Never Touched
+1. Download `Adrenaless_v1.4.cmd` from the [latest release](https://github.com/poolfullofmilk/Adrenaless/releases/latest)
+2. Double click it and pick an option
+3. Accept the admin prompt when it asks
+4. Restart when it asks, so AMD picks up the changes
 
-## What Changes
-- In Game Overlay On, Without It Adrenalin Crashes When Opened During A Game
-- Hotkeys And Metrics Overlay Off, So Nothing Shows Up In Game By Itself
-- AMD's Recording Server No Longer Starts With Windows
-- Adrenalin Itself Still Starts, So Your GPU Tuning Keeps Applying At Boot
-- Every Original Value Is Backed Up First, The Driver Itself Is Never Touched
+## Options
 
-Successor To [Adrenalize](https://github.com/poolfullofmilk/Adrenalize)
+- **Apply settings** sets everything below and backs up your original values first
+- **Restore everything** puts your original values back and removes the backup
+- **Open Adrenalin** opens Adrenalin. If it's stuck and won't open, it closes Adrenalin's background parts with one admin prompt and opens it again
+
+## What it changes
+
+| Setting | Set to | Why |
+| --- | --- | --- |
+| In-game overlay | On | Without it Adrenalin crashes when you open it during a game |
+| Hotkeys | Off | The overlay never pops up in a game by itself |
+| Metrics overlay | Off | No FPS or temperature overlay in your games |
+| AMD's `StartDVR` task | Off | AMD's recording server no longer starts with Windows |
+
+## What it leaves alone
+
+- Adrenalin still starts with Windows, so GPU tuning like an undervolt keeps applying at boot
+- Record & Stream, switch it inside Adrenalin itself because AMD resets its registry copy at every boot
+- AMD's drivers and services, and nothing keeps running in the background
+
+Your original values are saved in `%AppData%\Adrenaless\backup.json` until you restore them
+
+Successor to [Adrenalize](https://github.com/poolfullofmilk/Adrenalize)

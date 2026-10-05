@@ -4,7 +4,11 @@ Personal rules live in `~/.claude/CLAUDE.md`. This file only covers Adrenaless.
 
 ## What This Is
 
-One PowerShell script, `Adrenaless.ps1`, and `Adrenaless.cmd` to double click it. It turns the in-game overlay on and hotkeys and the metrics overlay off, disables AMD's `StartDVR` logon task that starts the recording server, and restores everything from a backup on request. Nothing stays running.
+One file, `Adrenaless.cmd`. It turns the in-game overlay on and hotkeys and the metrics overlay off, disables AMD's `StartDVR` logon task that starts the recording server, restores everything from a backup on request, and opens Adrenalin. Nothing stays running.
+
+The file is a batch and PowerShell hybrid. `<# :` is a harmless line to cmd and opens a block comment for PowerShell, so cmd runs the short header, which hands the whole file to PowerShell as a script block and exits before reaching the rest. The header puts the file's own path in `AdrenalessPath`, because a script block has no `$PSCommandPath`. The file must keep CRLF line endings and stay ASCII.
+
+The menu runs unelevated and only elevates for a single step: it relaunches the file hidden with `-Apply`, `-Restore` or `-Clear` through `Invoke-Elevated`. Viewing the status or opening Adrenalin never raises a prompt.
 
 `StartCN` is deliberately left alone. It starts Adrenalin at logon, and Adrenalin is what applies GPU tuning such as an undervolt; 1.0 disabled it and the tuning silently stopped applying after a restart. Third-party tools cannot replace that on recent Radeons, voltage control goes through AMD's own driver interface.
 
@@ -12,9 +16,9 @@ It replaces Adrenalize, a tray app that restarted AMD after every game launch an
 
 ## Opening Adrenalin
 
-`-Open` exists because Adrenalin gets stuck in a way only Task Manager used to fix. Its window process, `RadeonSoftware`, dies on its own, sometimes minutes after boot, while its background parts (`AMDRSServ`, `amdow`, `CPUMetricsServer`) stay alive and run elevated. A new launch then sees Adrenalin as already running, hands the request to those parts and exits in about a tenth of a second without writing a log, and when the background parts are hours old nothing ever shows up. Fresh background parts pass the request on fine, which is why the problem looks random.
+Menu option 3, or `-Open`, exists because Adrenalin gets stuck in a way only Task Manager used to fix. Its window process, `RadeonSoftware`, dies on its own, sometimes minutes after boot, while its background parts (`AMDRSServ`, `amdow`, `CPUMetricsServer`) stay alive and run elevated. A new launch then sees Adrenalin as already running, hands the request to those parts and exits in about a tenth of a second without writing a log, and when the background parts are hours old nothing ever shows up. Fresh background parts pass the request on fine, which is why the problem looks random.
 
-`-Open` runs as the user and launches Adrenalin normally. If no window appears within twelve seconds it relaunches itself elevated with `-Clear`, which closes every Adrenalin part but never AMD's driver services, then launches Adrenalin again as the user. The launch must stay unelevated: Adrenalin quits during its splash when it inherits administrator rights. `Adrenaless_Open.cmd` strips `_Open` from its own name to find the script, so a versioned pair keeps working.
+`-Open` runs as the user and launches Adrenalin normally. If no window appears within twelve seconds it relaunches itself elevated with `-Clear`, which closes every Adrenalin part but never AMD's driver services, then launches Adrenalin again as the user. The launch must stay unelevated: Adrenalin quits during its splash when it inherits administrator rights.
 
 ## In Game Overlay
 
@@ -31,7 +35,8 @@ Record And Stream is not managed. AMD rewrites `DvrEnabled` under `HKCU\Software
 - Only change what Adrenalin exposes as a setting, or AMD's own scheduled tasks. Never patch, rename or block driver files.
 - Write registry values with the type that is already there, Adrenalin ignores the wrong type.
 - Back up only on the first run, so a rerun never replaces the originals with values that are already changed.
-- Stay one script. No installer, no background task, no config file.
+- Stay one file. No installer, no background task, no config file.
+- The README is written in normal sentence case, and no sentence ends with punctuation.
 
 ## Known
 
@@ -41,8 +46,8 @@ Record And Stream is not managed. AMD rewrites `DvrEnabled` under `HKCU\Software
 
 ## Releases
 
-The version is `$Version` in the script, one digit after the dot. Release assets are `Adrenaless_v<version>.cmd`, `Adrenaless_v<version>_Open.cmd` and `Adrenaless_v<version>.ps1`, following the versioned naming rule. Both launchers find the `.ps1` from their own name, so the set keeps working after a rename.
+The version is `$Version` in the file, one digit after the dot. A release has one asset, `Adrenaless_v<version>.cmd`, and only the latest release is kept. The file finds itself through `%~f0`, so any name works.
 
 ## Checks
 
-Windows PowerShell 5.1. `-Status` needs no admin and is the smoke test.
+Windows PowerShell 5.1. `Adrenaless.cmd -Status` needs no admin and is the smoke test.
