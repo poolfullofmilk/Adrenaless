@@ -4,10 +4,12 @@ Keeps AMD Adrenalin opening, also while a game is running
 
 ## Use
 
-1. Download `Adrenaless_v1.4.cmd` from the [latest release](https://github.com/poolfullofmilk/Adrenaless/releases/latest)
-2. Double click it and pick an option
-3. Accept the admin prompt when it asks
+1. Download the `.cmd` file from the [latest release](https://github.com/poolfullofmilk/Adrenaless/releases/latest)
+2. Double click it. It saves itself to `%AppData%\Adrenaless` and adds Adrenaless to the Start menu, so the download can be deleted
+3. Pick an option and accept the admin prompt when it asks
 4. Restart when it asks, so AMD picks up the changes
+
+From then on, open Adrenaless from the Start menu. Running a newer download replaces the saved copy
 
 ## Options
 
@@ -31,5 +33,9 @@ Keeps AMD Adrenalin opening, also while a game is running
 - AMD's drivers and services, and nothing keeps running in the background
 
 Your original values are saved in `%AppData%\Adrenaless\backup.json` until you restore them
+
+## Removing it
+
+Pick restore everything first, then delete the `%AppData%\Adrenaless` folder and the Adrenaless Start menu entry
 
 Successor to [Adrenalize](https://github.com/poolfullofmilk/Adrenalize)

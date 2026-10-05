@@ -13,10 +13,14 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Version = '1.4'
+$Version = '1.5'
 
 # This File, Set By The Batch Header
 $ScriptPath = $env:AdrenalessPath
+
+# Permanent Copy And Its Start Menu Entry
+$InstallPath = Join-Path $env:APPDATA 'Adrenaless\Adrenaless.cmd'
+$ShortcutPath = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Adrenaless.lnk'
 
 # Original Values Are Kept Until Restore
 $BackupPath = Join-Path $env:APPDATA 'Adrenaless\backup.json'
@@ -91,6 +95,25 @@ function Show-Status {
     }
 
     Write-Line
+}
+
+function Install-Adrenaless {
+    # Running From Anywhere Else Copies This Version Over
+    if ($ScriptPath -ne $InstallPath) {
+        New-Item -ItemType Directory -Path (Split-Path $InstallPath) -Force | Out-Null
+        Copy-Item -Path $ScriptPath -Destination $InstallPath -Force
+    }
+
+    if (Test-Path $ShortcutPath) {
+        return
+    }
+
+    $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($ShortcutPath)
+    $shortcut.TargetPath = $InstallPath
+    $shortcut.WorkingDirectory = Split-Path $InstallPath
+    $shortcut.IconLocation = "$AdrenalinPath,0"
+    $shortcut.Save()
+    Write-Line 'Added To The Start Menu' Green
 }
 
 function Invoke-Elevated([string]$Argument) {
@@ -230,6 +253,7 @@ if ($Open) {
     return
 }
 
+Install-Adrenaless
 Show-Status
 Write-Line '  1  Apply Settings' White
 Write-Line '  2  Restore Everything' White
