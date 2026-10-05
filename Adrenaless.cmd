@@ -13,7 +13,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Version = '1.5'
+$Version = '2.0'
 
 # This File, Set By The Batch Header
 $ScriptPath = $env:AdrenalessPath
@@ -26,10 +26,9 @@ $ShortcutPath = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Ad
 $BackupPath = Join-Path $env:APPDATA 'Adrenaless\backup.json'
 $LegacyBackupPath = Join-Path $env:APPDATA 'Adrenalize\backup.json'
 
-# Adrenalin Settings And The State Each One Is Set To
+# Adrenalin Features That Show Up Inside Games
 $Settings = @(
-    # Off Makes Adrenalin Crash When Opened During A Game
-    @{ Key = 'HKCU:\Software\AMD\DVR'; Name = 'ShowRSOverlay'; Value = 'true'; State = 'On'; Label = 'In Game Overlay' }
+    @{ Key = 'HKCU:\Software\AMD\DVR'; Name = 'ShowRSOverlay'; Value = 'false'; State = 'Off'; Label = 'In Game Overlay' }
     @{ Key = 'HKCU:\Software\AMD\DVR'; Name = 'HotkeysDisabled'; Value = 1; State = 'Off'; Label = 'Hotkeys' }
     @{ Key = 'HKCU:\Software\AMD\CN\Performance'; Name = 'EnableMetricsOverlay'; Value = 0; State = 'Off'; Label = 'Metrics Overlay' }
 )
@@ -104,11 +103,12 @@ function Install-Adrenaless {
         Copy-Item -Path $ScriptPath -Destination $InstallPath -Force
     }
 
-    if (Test-Path $ShortcutPath) {
+    # Loads The Entry When It Exists, A Wrong Target Gets Replaced
+    $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($ShortcutPath)
+    if ($shortcut.TargetPath -eq $InstallPath) {
         return
     }
 
-    $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($ShortcutPath)
     $shortcut.TargetPath = $InstallPath
     $shortcut.WorkingDirectory = Split-Path $InstallPath
     $shortcut.IconLocation = "$AdrenalinPath,0"

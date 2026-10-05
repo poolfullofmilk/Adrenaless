@@ -1,6 +1,6 @@
 # Adrenaless
 
-Keeps AMD Adrenalin opening, also while a game is running
+Prevents AMD Adrenalin from crashing while a game is running
 
 ## Use
 
@@ -21,8 +21,8 @@ From then on, open Adrenaless from the Start menu. Running a newer download repl
 
 | Setting | Set to | Why |
 | --- | --- | --- |
-| In-game overlay | On | Without it Adrenalin crashes when you open it during a game |
-| Hotkeys | Off | The overlay never pops up in a game by itself |
+| In-game overlay | Off | Nothing from AMD draws inside your games |
+| Hotkeys | Off | AMD's shortcuts never trigger the overlay or recording in a game |
 | Metrics overlay | Off | No FPS or temperature overlay in your games |
 | AMD's `StartDVR` task | Off | AMD's recording server no longer starts with Windows |
 

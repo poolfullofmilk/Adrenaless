@@ -4,7 +4,7 @@ Personal rules live in `~/.claude/CLAUDE.md`. This file only covers Adrenaless.
 
 ## What This Is
 
-One file, `Adrenaless.cmd`. It turns the in-game overlay on and hotkeys and the metrics overlay off, disables AMD's `StartDVR` logon task that starts the recording server, restores everything from a backup on request, and opens Adrenalin. Nothing stays running.
+One file, `Adrenaless.cmd`. It turns the in-game overlay, hotkeys and the metrics overlay off, disables AMD's `StartDVR` logon task that starts the recording server, restores everything from a backup on request, and opens Adrenalin. Nothing stays running.
 
 The file is a batch and PowerShell hybrid. `<# :` is a harmless line to cmd and opens a block comment for PowerShell, so cmd runs the short header, which hands the whole file to PowerShell as a script block and exits before reaching the rest. The header puts the file's own path in `AdrenalessPath`, because a script block has no `$PSCommandPath`. The file must keep CRLF line endings and stay ASCII.
 
@@ -22,13 +22,13 @@ Menu option 3, or `-Open`, exists because Adrenalin gets stuck in a way only Tas
 
 `-Open` runs as the user and launches Adrenalin normally. If no window appears within twelve seconds it relaunches itself elevated with `-Clear`, which closes every Adrenalin part but never AMD's driver services, then launches Adrenalin again as the user. The launch must stay unelevated: Adrenalin quits during its splash when it inherits administrator rights.
 
-## In Game Overlay
+## Crash While A Game Runs
 
-The overlay is set on, not off. Adrenalin 26.10 opened while a game runs does not draw its normal window, it shows itself through the overlay. With the overlay off it crashed every time: `screen is not defined` in `MainDesktopWindow.qml`, exit code 13, then AMD's own `cncmd watch` restarted it hidden in the tray, which looks like nothing happened. With `FullscreenExperiencePrompt` under `HKCU\Software\AMD\CN` set to 0 it stopped crashing but still showed no window. With the overlay on and AMD restarted it opened mid-game in Overwatch and again after the game closed. Versions 1.0 to 1.2 turned the overlay off and caused the exact crash they were meant to fix.
-
-Hotkeys stay off, so the overlay never appears in a game unless Adrenalin is opened.
+Opening Adrenalin during a game crashed it when its background parts had been running for hours: `screen is not defined` in `MainDesktopWindow.qml`, exit code 13, then AMD's own `cncmd watch` restarted it hidden in the tray, which looks like nothing happened. Closing every Adrenalin part and opening it again, which is what option 3 does when Adrenalin won't show, fixed it, and it then opened mid-game in Overwatch and again after the game closed.
 
 The crash only shows in Adrenalin's debug output, read through `OutputDebugString` with DebugView or a `DBWIN_BUFFER` listener. Its `RSX_Common` log in `%LocalAppData%\AMD\CN` says nothing, and no Windows crash report is written.
+
+Versions 1.3 to 1.5 turned the in-game overlay on, believing the overlay being off caused the crash. That came from a test whose registry writes never reached the system, see Testing. On the real system the overlay was off the whole time Adrenalin worked in game, so 2.0 turns it off again.
 
 Record And Stream is not managed. AMD rewrites `DvrEnabled` under `HKCU\Software\AMD\DVR` to 1 at every boot from its own store, whatever the switch inside Adrenalin says, so writing it changed nothing. Versions 1.0 to 1.2 wrote it anyway.
 
@@ -43,7 +43,7 @@ Record And Stream is not managed. AMD rewrites `DvrEnabled` under `HKCU\Software
 ## Known
 
 - `amdihk64.dll` is placed by Adrenalin's host service, `AMDRSServ`, into every process that uses AMD's D3D driver, including ones that were already running. With Adrenalin not running nothing is hooked; measured after a restart with `StartCN` off, then again after opening Adrenalin by hand.
-- The hook itself is stock AMD behaviour. What actually broke AMD on this machine was restarting it underneath a running game, and the overlay being off when Adrenalin was opened in game.
+- The hook itself is stock AMD behaviour. What actually broke AMD on this machine was restarting it underneath a running game, and opening it in game once its background parts were hours old.
 - Adrenalize 3 kept its backup in `%AppData%\Adrenalize`, the script moves it over on first start so Restore still works.
 
 ## Releases
@@ -53,3 +53,9 @@ The version is `$Version` in the file, one digit after the dot. A release has on
 ## Checks
 
 Windows PowerShell 5.1. `Adrenaless.cmd -Status` needs no admin and is the smoke test.
+
+## Testing
+
+Shells started from the Claude desktop app run inside its app package, and Windows gives a packaged app a private copy of `HKCU` and of `%AppData%`. Registry writes from those shells, and from elevated processes they start, land in that copy only: they read back fine there but AMD and every other program never see them. Files written under `%AppData%` go to `%LocalAppData%\Packages\Claude_*\LocalCache\Roaming`, and a shortcut created from there points at that folder. The repository and `%Temp%` are shared. To test for real, launch through `explorer.exe`, which starts the process outside the package, and have it write its output to a file under `%Temp%`.
+
+That is also why the installer replaces a Start menu entry whose target is not `$InstallPath` instead of only creating a missing one.
