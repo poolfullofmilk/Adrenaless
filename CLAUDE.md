@@ -8,7 +8,7 @@ One file, `Adrenaless.cmd`. It turns the in-game overlay, hotkeys and the metric
 
 The file is a batch and PowerShell hybrid. `<# :` is a harmless line to cmd and opens a block comment for PowerShell, so cmd runs the short header, which hands the whole file to PowerShell as a script block and exits before reaching the rest. The header puts the file's own path in `AdrenalessPath`, because a script block has no `$PSCommandPath`. The file must keep CRLF line endings and stay ASCII.
 
-Opening the menu installs it: run from anywhere but `%AppData%\Adrenaless\Adrenaless.cmd`, the file copies itself there, overwriting an older copy, and creates `Adrenaless.lnk` in the user's Start menu with Adrenalin's icon if it is missing. One folder holds the copy and the backup, so removing it is that folder plus the shortcut. `-Status`, `-Open` and the elevated steps never install.
+Opening the menu installs it: run from anywhere but `%AppData%\Adrenaless\Adrenaless.cmd`, the file copies itself there, overwriting an older copy, and creates `Adrenaless.lnk` in the user's Start menu under `01 Apps` with Adrenalin's icon if it is missing. One folder holds the copy and the backup, so removing it is that folder plus the shortcut. `-Status`, `-Open` and the elevated steps never install.
 
 The menu runs unelevated and only elevates for a single step: it relaunches the file hidden with `-Apply`, `-Restore` or `-Clear` through `Invoke-Elevated`. Viewing the status or opening Adrenalin never raises a prompt.
 
